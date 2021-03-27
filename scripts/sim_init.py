@@ -35,8 +35,9 @@ def sim_init(date):
     log_msgs.append("Bodies have been shifted to heliocentric positions\n")
 
 
-    save_name='/data/sim_inits/{}_sim.bin'.format(formatted_date)
+    save_name='data/sim_inits/{}_sim.bin'.format(formatted_date)
     sim.save(save_name)
+
     log_msgs.append("sim.bin file located at: {}\n".format(save_name))
     log_msgs.append("Completed: {}\n".format(datetime.now()))
 
