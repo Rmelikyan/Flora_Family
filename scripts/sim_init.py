@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'
 
 import rebound
 from datetime import datetime
-from src.utilities.constants import ss_masses
+from src.utilities.constants import ss_masses, small_body_masses
 
 def sim_init(date):
     log_msgs = ["Initializing Sim at date: {}\n".format(date)]
@@ -16,6 +16,9 @@ def sim_init(date):
 
     perturbers = ["Sun", "Mercury", "Venus", "Earth", "Mars",
                   "Jupiter", "Saturn", "Uranus", "Neptune"]
+    small_body_names = list(small_body_masses.keys())
+
+    perturbers += small_body_names
     log_msgs.append("Perturbers included: {}\n".format(str(perturbers)))
 
 
@@ -27,7 +30,10 @@ def sim_init(date):
 
         sim.add(name, date = date)
         sim.particles[-1].hash = name
-        sim.particles[-1].m = ss_masses[mass_key]
+        if mass_key in ss_masses.keys():
+            sim.particles[-1].m = ss_masses[mass_key]
+        elif mass_key in small_body_masses.keys():
+            sim.particles[-1].m = small_body_masses[mass_key]
     log_msgs.append("Masses as defined in constants.py used\n")
     log_msgs.append("NOTE: If Earth included but not Moon then EMB mass used\n")
 
@@ -35,7 +41,7 @@ def sim_init(date):
     log_msgs.append("Bodies have been shifted to heliocentric positions\n")
 
 
-    save_name='data/sim_inits/{}_sim.bin'.format(formatted_date)
+    save_name='data/sim_inits/{}_sim_SMALLBODIES.bin'.format(formatted_date)
     sim.save(save_name)
 
     log_msgs.append("sim.bin file located at: {}\n".format(save_name))
