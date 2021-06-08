@@ -16,48 +16,39 @@ void heartbeat(struct reb_simulation* r);
 
 double sec2year = 31536000.0;
 double rad2Deg = 57.29577951308232;
-double years = 100e6;
-double dadts[130] = {-0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001};
+double years = 1e6;
+double dadts[18] = {2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5};
 double au2m = 149597870700;
 
 int main(int argc, char* argv[]){
-    double tmax = years * sec2year;
-    char* init_file = "/Users/bethclark/Projects/Flora_Family/data/sim_inits/walsh_yarko_high_e.bin";
-    char* filename = "walsh_yarko_100Myr_high_e_test.bin";
+    if(argc != 2){
+        printf("Must include 'path_to_sim' as command line inputs!\nProgram Terminated\n");
+        exit(0);
+    }
 
-    struct reb_simulationarchive* sa = reb_open_simulationarchive(init_file);
+    double tmax = years * sec2year;
+    
+    char* path_to_sim = argv[1];
+
+    struct reb_simulationarchive* sa = reb_open_simulationarchive(path_to_sim);
     if (sa==NULL){
-        printf("Can not open file.\n");
+        printf("Can not open sim file.\nProgram Temrinating\n");
+        exit(0);
     }
     // Get a simulation from the file (if possible, otherwise NULL is returned)
-    struct reb_simulation* r = reb_create_simulation_from_simulationarchive(sa,-1);
+    struct reb_simulation* r = reb_create_simulation_from_simulationarchive(sa,0);
     // Whenever you've opened a SimulationArchive and don't need it anymore, close it.
     reb_close_simulationarchive(sa);
     // Check if we were successful
-    if (r==NULL){
-        printf("No simulation archive found. Exiting.\n");
-        exit;
-    }else{
-        printf("Found simulation archive. Loaded snapshot at t=%.16f.\n",r->t);
-    }
 
-    if (remove(filename) == 0)
-      printf("Deleted old sim archive\n");
-   else
-      printf("Did not find old sim archive\n");
+    remove(path_to_sim); // remove init file. To Be Replaced with archive
 
-    reb_simulationarchive_automate_interval(r,filename,1e5*sec2year);
-    r->integrator                   = REB_INTEGRATOR_WHFAST;
-    r->N_active                     = 8;             // the star is the only massive particle
-    r->dt                           = 8e5;
+    reb_simulationarchive_automate_interval(r,path_to_sim,5e4*sec2year);
     r->force_is_velocity_dependent  = 1;
     r->additional_forces            = yarko_da;    // setup callback function for velocity dependent forces
     r->heartbeat                    = heartbeat;
-    r->G                            = 6.67408e-11;
-    printf("%f\n",r->G*1e11);
-    printf("Starting sim at t: %f\n",r->t);
+    r->N_active                     = 8;
     reb_integrate(r, tmax);
-    printf("Final time: %f\n",r->t);
 
     reb_free_simulation(r);
 }
