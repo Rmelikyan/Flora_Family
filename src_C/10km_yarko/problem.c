@@ -16,8 +16,8 @@ void heartbeat(struct reb_simulation* r);
 
 double sec2year = 31536000.0;
 double rad2Deg = 57.29577951308232;
-double years = 1e6;
-double dadts[18] = {2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5};
+double years = 1e4;
+double dadts[20] = {2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5, 2e-5, -2e-5};
 double au2m = 149597870700;
 
 int main(int argc, char* argv[]){
@@ -26,8 +26,8 @@ int main(int argc, char* argv[]){
         exit(0);
     }
 
-    double tmax = years * sec2year;
-    
+    double tmax = (years + 1) * sec2year;
+
     char* path_to_sim = argv[1];
 
     struct reb_simulationarchive* sa = reb_open_simulationarchive(path_to_sim);
@@ -43,14 +43,16 @@ int main(int argc, char* argv[]){
 
     remove(path_to_sim); // remove init file. To Be Replaced with archive
 
-    reb_simulationarchive_automate_interval(r,path_to_sim,5e4*sec2year);
+    reb_simulationarchive_automate_interval(r,path_to_sim,500*sec2year);
     r->force_is_velocity_dependent  = 1;
     r->additional_forces            = yarko_da;    // setup callback function for velocity dependent forces
     r->heartbeat                    = heartbeat;
     r->N_active                     = 8;
     reb_integrate(r, tmax);
 
-    reb_free_simulation(r);
+    // reb_free_pointers(r);
+    // reb_free_simulation(r);
+    exit(0);
 }
 
 void yarko_da(struct reb_simulation* r){
@@ -87,7 +89,7 @@ void yarko_da(struct reb_simulation* r){
 }
 
 void heartbeat(struct reb_simulation* r){
-    if(reb_output_check(r, 1e4*sec2year)){                        // print some information to screen
+    if(reb_output_check(r, 1e3*sec2year)){                        // print some information to screen
         reb_output_timing(r, years * sec2year);
     }
 }

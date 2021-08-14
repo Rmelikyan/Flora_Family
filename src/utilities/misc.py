@@ -16,3 +16,10 @@ def normDif(a1, a2):
         raise Exception("Bad Arrays")
 
     return(norm([a1[i]-a2[i] for i in range(len(a1))]))
+
+def mod360(ang):
+    """ Transforms degree angle of arbitrary range to 0 - 360 """
+    while ang < 0:
+        ang+=360
+    return ang%360
+        
